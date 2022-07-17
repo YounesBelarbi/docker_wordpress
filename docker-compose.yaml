@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  mysql_db:
+    container_name: 'mysql_container'
+    image: mysql:8.0.27
+    volumes:
+      - mysql:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    expose:
+      - 3306
+    #   - 33060
+
+
+  wordpress:
+    image: wordpress:latest
+    # build:
+    #   context: .
+    container_name: 'wordpress_container'
+    depends_on:
+      - mysql_db
+    volumes:
+      # - "./:/var/www/html"
+      - "./wp-content:/var/www/html/wp-content"
+      - "./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini"
+      - "./wp-config.php:/var/www/html/wp-config.php"
+      # - "./.htaccess:/var/www/html/.htaccess"
+      # - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+
+    ports:
+      - 8000:80
+    restart: always
+    environment:
+      # WORDPRESS_DB_HOST: mysql_db:3306
+      WORDPRESS_DB_HOST: mysql_db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    # command: 'sudo chown $USER wp-content/ -R'
+
+  phpmyadmin:
+    container_name: 'phpmyadmin_container'
+    image: phpmyadmin
+    restart: always
+    depends_on:
+      - mysql_db
+    ports:
+      - 8080:80
+    environment:
+      PMA_HOST: mysql_db
+
+volumes:
+  mysql:
+
+    # php_value memory_limit 600M
+    # php_value upload_max_filesize 64M
+    # php_value post_max_size 64M
+    # php_value max_execution_time 300
